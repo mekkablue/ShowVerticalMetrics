@@ -30,7 +30,7 @@ class ShowVerticalMetrics(ReporterPlugin):
 		)
 		
 	def background(self, layer):
-		defaultColor = NSColor.greenColor()
+		defaultColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( 0.4, 0.8, 0.4, 1 )
 		defaultColor.set()
 		thisMaster = layer.associatedFontMaster()
 		heightsAlreadyUsed = []
