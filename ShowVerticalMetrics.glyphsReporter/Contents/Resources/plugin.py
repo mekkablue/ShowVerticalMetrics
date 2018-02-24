@@ -21,16 +21,34 @@ class ShowVerticalMetrics(ReporterPlugin):
 		self.verticalMetrics = (
 			"hheaAscender",
 			"hheaDescender",
-			# "hheaLineGap",
 			"typoAscender",
 			"typoDescender",
-			# "typoLineGap",
 			"winAscent",
-			"winDescent"
+			"winDescent",
+			# "hheaLineGap",
+			# "typoLineGap",
 		)
 		
 	def background(self, layer):
 		defaultColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( 0.4, 0.8, 0.4, 1 )
+		if Glyphs.defaults["com.mekkablue.ShowVerticalMetrics.color"]:
+			rgba = [
+				defaultColor.redComponent(),
+				defaultColor.greenComponent(),
+				defaultColor.blueComponent(),
+				defaultColor.alphaComponent(),
+			]
+			colorpref = Glyphs.defaults["com.mekkablue.ShowVerticalMetrics.color"].split(",")
+			for i in range( min( 4, len(colorpref) ) ):
+				try:
+					colorvalue = float( colorpref[i].strip() )
+					if colorvalue > 1.0:
+						colorvalue /= 100.0
+					rgba[i] = colorvalue % 1.0
+				except:
+					print "\nWarning: could not convert '%s' into %s value." % (colorpref[i], ("red","green","blue","alpha")[i])
+					print "com.mekkablue.ShowVerticalMetrics.color takes comma-separated numbers between 0.0 and 1.0 (or 0 and 100)."
+			defaultColor = NSColor.colorWithRed_green_blue_alpha_( rgba[0], rgba[1], rgba[2], rgba[3] )
 		defaultColor.set()
 		thisMaster = layer.associatedFontMaster()
 		heightsAlreadyUsed = []

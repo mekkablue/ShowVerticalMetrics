@@ -24,6 +24,21 @@ or:
 1. Open at least one glyph in Edit View.
 2. Use *View > Show Vertical Metrics* to toggle the display of the Vertical Metrics.
 
+You can set a custom color by typing this in *Window > Show Macro Panel* and pressing the *Run* button:
+
+```python
+Glyphs.defaults["com.mekkablue.ShowVerticalMetrics.color"] = "0.0, 0.5, 0.7"
+```
+
+You can set up to four comma-separated numbers (red, green, blue, alpha) between 0.0 and 1.0. Specifying only one number will only overwrite red, specifying two numbers will overwrite the values for red and green, but keep the others at their default values. If you enter numbers above 1.0, they will be divided by a hundred. So you can also specify `"50,80"` for 50% red and 80% green and the default blue and alpha values.
+
+You can revert to the default colors by typing this in the Macro Window and pressing the *Run* button:
+
+```python
+del Glyphs.defaults["com.mekkablue.ShowVerticalMetrics.color"]
+```
+
+
 ### Requirements
 
 The plugin needs Glyphs 2.4 or higher, running on OS X 10.9 or later. It does NOT work with Glyphs 1.x.
