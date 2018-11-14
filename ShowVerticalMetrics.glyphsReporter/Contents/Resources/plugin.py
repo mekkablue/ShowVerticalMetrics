@@ -23,6 +23,7 @@ class ShowVerticalMetrics(ReporterPlugin):
 		self.menuName = Glyphs.localize({
 			'en': u'Vertical Metrics',
 			'de': u'Vertikalmaße',
+			'es': u'métricas verticales',
 		})
 		self.verticalMetrics = (
 			"hheaAscender",
