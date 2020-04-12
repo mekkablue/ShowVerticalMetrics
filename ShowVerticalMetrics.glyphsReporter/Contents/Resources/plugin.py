@@ -1,4 +1,5 @@
 # encoding: utf-8
+from __future__ import division, print_function, unicode_literals
 
 ###########################################################################################################
 #
@@ -11,14 +12,15 @@
 #
 ###########################################################################################################
 
-
+import objc
+from GlyphsApp import *
 from GlyphsApp.plugins import *
-from GlyphsApp import GSLayer
-	
+
 class ShowVerticalMetrics(ReporterPlugin):
 	lowestGlyphName = None
 	tallestGlyphName = None
 	
+	@objc.python_method
 	def settings(self):
 		self.menuName = Glyphs.localize({
 			'en': u'Vertical Metrics',
@@ -35,7 +37,8 @@ class ShowVerticalMetrics(ReporterPlugin):
 			# "hheaLineGap",
 			# "typoLineGap",
 		)
-		
+	
+	@objc.python_method
 	def background(self, layer):
 		# define color:
 		defaultColor = NSColor.colorWithCalibratedRed_green_blue_alpha_( 0.4, 0.8, 0.4, 1 )
@@ -54,8 +57,8 @@ class ShowVerticalMetrics(ReporterPlugin):
 						colorvalue /= 100.0
 					rgba[i] = colorvalue % 1.0
 				except:
-					print "\nWarning: could not convert '%s' into %s value." % (colorpref[i], ("red","green","blue","alpha")[i])
-					print "com.mekkablue.ShowVerticalMetrics.color takes comma-separated numbers between 0.0 and 1.0 (or 0 and 100)."
+					print("\nWarning: could not convert '%s' into %s value." % (colorpref[i], ("red","green","blue","alpha")[i]))
+					print("com.mekkablue.ShowVerticalMetrics.color takes comma-separated numbers between 0.0 and 1.0 (or 0 and 100).")
 			defaultColor = NSColor.colorWithRed_green_blue_alpha_( rgba[0], rgba[1], rgba[2], rgba[3] )
 		defaultColor.set()
 		
@@ -124,8 +127,9 @@ class ShowVerticalMetrics(ReporterPlugin):
 						extremeBezierPaths.fill()
 				else:
 					pass
-					# print "No extreme paths drawn." # DEBUG
-						
+					# print("No extreme paths drawn.") # DEBUG
+	
+	@objc.python_method
 	def extremeLayerBezierPathsForFont(self, thisFont):
 		if not self.tallestGlyphName or not self.lowestGlyphName:
 			self.updateExtremeLayersForFont(thisFont)
@@ -158,17 +162,19 @@ class ShowVerticalMetrics(ReporterPlugin):
 					extremeBeziers.appendBezierPath_(extremeBezier)
 				else:
 					pass
-					# print "Cannot get bezierPath for %s." % repr(extremeLayer) # DEBUG
+					# print("Cannot get bezierPath for %s." % repr(extremeLayer)) # DEBUG
 			else:
 				pass
-				# print "Extreme Layer empty." # DEBUG
+				# print("Extreme Layer empty.") # DEBUG
 			
 		return extremeBeziers
 	
+	@objc.python_method
 	def updateExtremeLayersForFont(self, thisFont):
 		for thisMaster in thisFont.masters:
 			self.updateExtremeLayersForMaster(thisMaster)
 	
+	@objc.python_method
 	def updateExtremeLayersForMaster(self, thisMaster):
 		thisFont = thisMaster.font()
 		mID = thisMaster.id
@@ -183,3 +189,8 @@ class ShowVerticalMetrics(ReporterPlugin):
 				if (not self.tallestGlyphName) or (theseBounds.origin.y+theseBounds.size.height) > highest:
 					self.tallestGlyphName = thisGlyph.name
 					highest = (theseBounds.origin.y+theseBounds.size.height)
+
+	@objc.python_method
+	def __file__(self):
+		"""Please leave this method unchanged"""
+		return __file__
