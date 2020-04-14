@@ -26,6 +26,7 @@ class ShowVerticalMetrics(ReporterPlugin):
 			'en': u'Vertical Metrics',
 			'de': u'Vertikalmaße',
 			'es': u'métricas verticales',
+			'fr': u'mesures verticales',
 		})
 		self.verticalMetrics = (
 			"hheaAscender",
