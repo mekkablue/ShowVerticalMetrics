@@ -73,8 +73,23 @@ class ShowVerticalMetrics(ReporterPlugin):
 		shiftToWindowBorder = xPosition / zoomFactor
 		
 		if thisMaster:
-			for thisMetric in self.verticalMetrics:
-				height = thisMaster.customParameters[thisMetric]
+			vertical_metrics = dict()
+			try:
+				for vm in thisMaster.metrics:
+					vertical_metrics[vm.name] = vm.position
+					# Should we add the .overshoot as well?
+			except Exception:
+				print('Cannot read master.metrics. Seems to be GlyphsApp Version 2.')
+
+			for vm_name in self.verticalMetrics:
+				if vm_name not in vertical_metrics:
+					vertical_metrics[vm_name] = None
+
+			for thisMetric, v in vertical_metrics.items():
+				if v is None:
+					height = thisMaster.customParameters[thisMetric]
+				else:
+					height = v
 				if height:
 					if thisMetric == "winDescent":
 						height *= -1
