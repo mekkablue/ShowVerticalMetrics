@@ -23,10 +23,11 @@ class ShowVerticalMetrics(ReporterPlugin):
 	@objc.python_method
 	def settings(self):
 		self.menuName = Glyphs.localize({
-			'en': u'Vertical Metrics',
-			'de': u'Vertikalmaße',
-			'es': u'métricas verticales',
-			'fr': u'mesures verticales',
+			'en': 'Vertical Metrics',
+			'de': 'Vertikalmaße',
+			'es': 'métricas verticales',
+			'fr': 'mesures verticales',
+			'it': 'metriche verticali',
 		})
 		self.verticalMetrics = (
 			"hheaAscender",
@@ -99,7 +100,7 @@ class ShowVerticalMetrics(ReporterPlugin):
 			# draw metric names:
 			if zoomFactor >= 0.07: # only display names when zoomed in enough
 				self.drawTextAtPoint(
-					"  " + thisMetric + "  ", 
+					f"  {thisMetric}  ", 
 					NSPoint(
 						(xPosition + 80) / zoomFactor, 
 						height + 2 / zoomFactor if "bottom" in alignment else height,
