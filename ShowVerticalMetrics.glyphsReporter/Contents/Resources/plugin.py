@@ -100,7 +100,7 @@ class ShowVerticalMetrics(ReporterPlugin):
 			# draw metric names:
 			if zoomFactor >= 0.07: # only display names when zoomed in enough
 				self.drawTextAtPoint(
-					f"  {thisMetric}  ", 
+					"  %s  " % thisMetric, 
 					NSPoint(
 						(xPosition + 80) / zoomFactor, 
 						height + 2 / zoomFactor if "bottom" in alignment else height,
