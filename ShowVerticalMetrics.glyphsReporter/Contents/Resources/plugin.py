@@ -13,8 +13,9 @@ from __future__ import division, print_function, unicode_literals
 ###########################################################################################################
 
 import objc
-from GlyphsApp import *
-from GlyphsApp.plugins import *
+from GlyphsApp import Glyphs
+from GlyphsApp.plugins import ReporterPlugin
+from AppKit import NSColor, NSBezierPath, NSAffineTransform, NSPoint
 
 class ShowVerticalMetrics(ReporterPlugin):
 	lowestGlyphName = None
