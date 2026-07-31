@@ -42,6 +42,20 @@ class ShowVerticalMetrics(ReporterPlugin):
 		)
 
 	@objc.python_method
+	def metricValue(self, thisMaster, thisMetric):
+		"""
+		Returns the value of the vertical metric custom parameter.
+		In Glyphs 4+, font-wide parameters are also accepted,
+		but master parameters take precedence over them.
+		"""
+		height = thisMaster.customParameters[thisMetric]
+		if height is None and Glyphs.versionNumber >= 4.0:
+			thisFont = thisMaster.font
+			if thisFont:
+				height = thisFont.customParameters[thisMetric]
+		return height
+
+	@objc.python_method
 	def background(self, layer):
 		# define color:
 		defaultColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0.4, 0.8, 0.4, 1)
@@ -77,7 +91,7 @@ class ShowVerticalMetrics(ReporterPlugin):
 		shiftToWindowBorder = xPosition / zoomFactor
 
 		for thisMetric in self.verticalMetrics:
-			height = thisMaster.customParameters[thisMetric]
+			height = self.metricValue(thisMaster, thisMetric)
 			if not height:
 				continue
 
