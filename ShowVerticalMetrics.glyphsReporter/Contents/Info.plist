@@ -13,9 +13,9 @@
 	<key>CFBundleName</key>
 	<string>ShowVerticalMetrics</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.0.8</string>
+	<string>2.0.9</string>
 	<key>CFBundleVersion</key>
-	<string>17</string>
+	<string>18</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright, Rainer Erich Scheichelbauer, 2017</string>
 	<key>NSPrincipalClass</key>
@@ -29,6 +29,6 @@
 	<key>productPageURL</key>
 	<string>https://github.com/mekkablue/ShowVerticalMetrics</string>
 	<key>productReleaseNotes</key>
-	<string>Localizzazione italiana</string>
+	<string>Metric names stay at the left window border in Glyphs 4.</string>
 </dict>
 </plist>
