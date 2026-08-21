@@ -56,8 +56,11 @@ class ShowVerticalMetrics(ReporterPlugin):
 		return height
 
 	@objc.python_method
-	def background(self, layer):
-		# define color:
+	def metricColor(self):
+		"""
+		Returns the color for the metric lines and their names, either the
+		default green or the color set in the ...ShowVerticalMetrics.color pref.
+		"""
 		defaultColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0.4, 0.8, 0.4, 1)
 		if Glyphs.defaults["com.mekkablue.ShowVerticalMetrics.color"]:
 			rgba = [
@@ -77,19 +80,18 @@ class ShowVerticalMetrics(ReporterPlugin):
 					print("\nWarning: could not convert '%s' into %s value." % (colorpref[i], ("red","green","blue","alpha")[i]))
 					print("com.mekkablue.ShowVerticalMetrics.color takes comma-separated numbers between 0.0 and 1.0 (or 0 and 100).")
 			defaultColor = NSColor.colorWithRed_green_blue_alpha_(rgba[0], rgba[1], rgba[2], rgba[3])
-		defaultColor.set()
+		return defaultColor
 
-		# draw vertical metrics:
-		thisMaster = layer.associatedFontMaster()
-		if not thisMaster:
-			return
+	@objc.python_method
+	def metricsForMaster(self, thisMaster):
+		"""
+		Returns a list of (metricName, height, alignment, isFirstAtThisHeight)
+		tuples for all vertical metrics defined in thisMaster. Only the first
+		metric at a given height gets a line, the others are labelled differently
+		so that their names do not overlap.
+		"""
+		metrics = []
 		heightsAlreadyUsed = []
-
-		# query current view settings:
-		zoomFactor = self.getScale()
-		xPosition = self.controller.viewPort.origin.x - self.controller.selectedLayerOrigin.x
-		shiftToWindowBorder = xPosition / zoomFactor
-
 		for thisMetric in self.verticalMetrics:
 			height = self.metricValue(thisMaster, thisMetric)
 			if not height:
@@ -98,34 +100,48 @@ class ShowVerticalMetrics(ReporterPlugin):
 			if thisMetric == "winDescent":
 				height *= -1
 
-			alignment = "bottomright"
-			if height in heightsAlreadyUsed:
+			isFirstAtThisHeight = height not in heightsAlreadyUsed
+			if isFirstAtThisHeight:
+				heightsAlreadyUsed.append(height)
+				alignment = "bottomright"
+			else:
 				alignment = "topright"
 				if "win" in thisMetric:
 					alignment = "bottomleft"
-			else:
-				heightsAlreadyUsed.append(height)
-				line = NSBezierPath.bezierPath()
-				line.moveToPoint_(NSPoint(-50000, height))
-				line.lineToPoint_(NSPoint(+50000, height))
-				line.setLineWidth_(1.0 / zoomFactor)
-				line.setLineDash_count_phase_([1.0 / zoomFactor, 3.0 / zoomFactor], 2, 3.5 / zoomFactor)
-				line.stroke()
 
-			# draw metric names:
-			if zoomFactor >= 0.07: # only display names when zoomed in enough
-				self.drawTextAtPoint(
-					"  %s  " % thisMetric,  # use old fashioned format string to make it work in Glyphs 2
-					NSPoint(
-						(xPosition + 80) / zoomFactor, 
-						height + 2 / zoomFactor if "bottom" in alignment else height,
-					),
-					fontColor=defaultColor,
-					align=alignment
-				)
+			metrics.append((thisMetric, height, alignment, isFirstAtThisHeight))
+		return metrics
+
+	@objc.python_method
+	def background(self, layer):
+		"""
+		Draws the metric lines in layer (em unit) coordinates.
+		The metric names are drawn in backgroundInViewCoords() instead,
+		because they must not move when the user zooms.
+		"""
+		thisMaster = layer.associatedFontMaster()
+		if not thisMaster:
+			return
+
+		self.metricColor().set()
+		zoomFactor = self.getScale()
+
+		for thisMetric, height, alignment, isFirstAtThisHeight in self.metricsForMaster(thisMaster):
+			if not isFirstAtThisHeight:
+				continue
+			line = NSBezierPath.bezierPath()
+			line.moveToPoint_(NSPoint(-50000, height))
+			line.lineToPoint_(NSPoint(+50000, height))
+			line.setLineWidth_(1.0 / zoomFactor)
+			line.setLineDash_count_phase_([1.0 / zoomFactor, 3.0 / zoomFactor], 2, 3.5 / zoomFactor)
+			line.stroke()
 
 		# draw tallest and lowest glyphs:
 		if False: #Glyphs.defaults["com.mekkablue.ShowVerticalMetrics.displayExtremeGlyphs"]:
+			# TODO: when this is switched on again, move it into backgroundInViewCoords(),
+			# so that it sticks to the left window border like the metric names do.
+			xPosition = self.controller.viewPort.origin.x - self.controller.selectedLayerOrigin.x
+			shiftToWindowBorder = xPosition / zoomFactor
 			extremeBezierPaths = self.extremeLayerBezierPathsForFont(thisMaster.font)
 
 			if extremeBezierPaths:
@@ -148,6 +164,43 @@ class ShowVerticalMetrics(ReporterPlugin):
 			else:
 				pass
 				# print("No extreme paths drawn.") # DEBUG
+
+	@objc.python_method
+	def backgroundInViewCoords(self, layer):
+		"""
+		Draws the metric names. This happens in view coordinates (screen pixels
+		relative to the Edit view) rather than in em units, so the names keep a
+		fixed distance from the left border of the viewport at every zoom stage.
+		"""
+		zoomFactor = self.getScale()
+		if zoomFactor < 0.07: # only display names when zoomed in enough
+			return
+
+		if not layer:
+			return
+		thisMaster = layer.associatedFontMaster()
+		if not thisMaster:
+			return
+
+		fontColor = self.metricColor()
+
+		# left window border plus a fixed pixel margin, no division by the zoom factor:
+		xPosition = self.controller.viewPort.origin.x + 80
+		# em units are the only thing that still needs to be scaled into view coordinates:
+		yOrigin = self.controller.selectedLayerOrigin.y
+
+		for thisMetric, height, alignment, isFirstAtThisHeight in self.metricsForMaster(thisMaster):
+			yPosition = yOrigin + height * zoomFactor
+			if "bottom" in alignment:
+				yPosition += 2 # keep the name clear of the metric line
+
+			self.drawTextAtPoint(
+				"  %s  " % thisMetric,  # use old fashioned format string to make it work in Glyphs 2
+				NSPoint(xPosition, yPosition),
+				fontSize=10.0 * zoomFactor, # counters the scaling drawTextAtPoint applies
+				fontColor=fontColor,
+				align=alignment,
+			)
 
 	@objc.python_method
 	def extremeLayerBezierPathsForFont(self, thisFont):
