@@ -13,9 +13,9 @@
 	<key>CFBundleName</key>
 	<string>ShowVerticalMetrics</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.0.9</string>
+	<string>2.0.10</string>
 	<key>CFBundleVersion</key>
-	<string>18</string>
+	<string>19</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright, Rainer Erich Scheichelbauer, 2017</string>
 	<key>NSPrincipalClass</key>
@@ -29,6 +29,6 @@
 	<key>productPageURL</key>
 	<string>https://github.com/mekkablue/ShowVerticalMetrics</string>
 	<key>productReleaseNotes</key>
-	<string>Metric names stay at the left window border in Glyphs 4.</string>
+	<string>Fixed a crash in recent Glyphs versions that call backgroundInViewCoords() without a layer.</string>
 </dict>
 </plist>
