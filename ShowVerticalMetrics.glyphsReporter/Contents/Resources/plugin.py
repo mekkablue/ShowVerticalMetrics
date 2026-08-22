@@ -113,12 +113,36 @@ class ShowVerticalMetrics(ReporterPlugin):
 		return metrics
 
 	@objc.python_method
-	def background(self, layer):
+	def currentLayer(self):
+		"""
+		Returns the currently edited layer. Recent Glyphs versions call
+		backgroundInViewCoords() without arguments, so we need to be able to
+		determine the layer ourselves.
+		"""
+		try:
+			layer = self.controller.graphicView().activeLayer()
+			if layer:
+				return layer
+		except:
+			pass
+		thisFont = Glyphs.font
+		if thisFont:
+			selectedLayers = thisFont.selectedLayers
+			if selectedLayers:
+				return selectedLayers[0]
+		return None
+
+	@objc.python_method
+	def background(self, layer=None):
 		"""
 		Draws the metric lines in layer (em unit) coordinates.
 		The metric names are drawn in backgroundInViewCoords() instead,
 		because they must not move when the user zooms.
 		"""
+		if layer is None:
+			layer = self.currentLayer()
+		if not layer:
+			return
 		thisMaster = layer.associatedFontMaster()
 		if not thisMaster:
 			return
@@ -166,7 +190,7 @@ class ShowVerticalMetrics(ReporterPlugin):
 				# print("No extreme paths drawn.") # DEBUG
 
 	@objc.python_method
-	def backgroundInViewCoords(self, layer):
+	def backgroundInViewCoords(self, layer=None):
 		"""
 		Draws the metric names. This happens in view coordinates (screen pixels
 		relative to the Edit view) rather than in em units, so the names keep a
@@ -176,6 +200,8 @@ class ShowVerticalMetrics(ReporterPlugin):
 		if zoomFactor < 0.07: # only display names when zoomed in enough
 			return
 
+		if layer is None:
+			layer = self.currentLayer()
 		if not layer:
 			return
 		thisMaster = layer.associatedFontMaster()
