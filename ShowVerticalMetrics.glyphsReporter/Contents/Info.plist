@@ -13,9 +13,9 @@
 	<key>CFBundleName</key>
 	<string>ShowVerticalMetrics</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.0.11</string>
+	<string>2.0.12</string>
 	<key>CFBundleVersion</key>
-	<string>20</string>
+	<string>21</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright, Rainer Erich Scheichelbauer, 2017</string>
 	<key>NSPrincipalClass</key>
@@ -29,6 +29,6 @@
 	<key>productPageURL</key>
 	<string>https://github.com/mekkablue/ShowVerticalMetrics</string>
 	<key>productReleaseNotes</key>
-	<string>Metric names are visible again, and stay at the left window border.</string>
+	<string>Shorter metric names: hheaAsc, typoDesc, winAsc etc.</string>
 </dict>
 </plist>
