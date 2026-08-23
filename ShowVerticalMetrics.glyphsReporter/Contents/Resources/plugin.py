@@ -56,6 +56,23 @@ class ShowVerticalMetrics(ReporterPlugin):
 		return height
 
 	@objc.python_method
+	def metricDisplayName(self, thisMetric):
+		"""
+		Shortens the parameter name for display in the Edit view:
+		hheaAscender -> hheaAsc, typoDescender -> typoDesc, winAscent -> winAsc,
+		winDescent -> winDesc. Only the label is shortened, the parameter is
+		still looked up under its full name.
+		"""
+		for longForm, shortForm in (
+			("Descender", "Desc"),
+			("Descent", "Desc"),
+			("Ascender", "Asc"),
+			("Ascent", "Asc"),
+		):
+			thisMetric = thisMetric.replace(longForm, shortForm)
+		return thisMetric
+
+	@objc.python_method
 	def metricColor(self):
 		"""
 		Returns the color for the metric lines and their names, either the
@@ -231,7 +248,7 @@ class ShowVerticalMetrics(ReporterPlugin):
 				yPosition += 2 # keep the name clear of the metric line
 
 			self.drawTextAtPoint(
-				"  %s  " % thisMetric,  # use old fashioned format string to make it work in Glyphs 2
+				"  %s  " % self.metricDisplayName(thisMetric),  # use old fashioned format string to make it work in Glyphs 2
 				NSPoint(xPosition, yPosition),
 				fontSize=10.0 * zoomFactor, # counters the scaling drawTextAtPoint applies
 				fontColor=fontColor,
