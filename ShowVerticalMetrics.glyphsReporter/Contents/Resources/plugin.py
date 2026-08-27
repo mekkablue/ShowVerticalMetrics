@@ -130,6 +130,25 @@ class ShowVerticalMetrics(ReporterPlugin):
 		return metrics
 
 	@objc.python_method
+	def viewController(self):
+		"""
+		Returns the Edit view controller we are drawing into. self.controller
+		can be None (e.g. while a tab is opened or closed, or when Glyphs draws
+		through a view the plugin is not attached to), so fall back to the
+		current tab of the frontmost font.
+		"""
+		try:
+			controller = self.controller
+		except:
+			controller = None
+		if controller is not None:
+			return controller
+		thisFont = Glyphs.font
+		if thisFont:
+			return thisFont.currentTab
+		return None
+
+	@objc.python_method
 	def currentLayer(self):
 		"""
 		Returns the currently edited layer. Recent Glyphs versions call
@@ -137,7 +156,7 @@ class ShowVerticalMetrics(ReporterPlugin):
 		determine the layer ourselves.
 		"""
 		try:
-			layer = self.controller.graphicView().activeLayer()
+			layer = self.viewController().graphicView().activeLayer()
 			if layer:
 				return layer
 		except:
@@ -181,7 +200,10 @@ class ShowVerticalMetrics(ReporterPlugin):
 		if False: #Glyphs.defaults["com.mekkablue.ShowVerticalMetrics.displayExtremeGlyphs"]:
 			# TODO: when this is switched on again, move it into backgroundInViewCoords(),
 			# so that it sticks to the left window border like the metric names do.
-			xPosition = self.controller.viewPort.origin.x - self.controller.selectedLayerOrigin.x
+			controller = self.viewController()
+			if controller is None:
+				return
+			xPosition = controller.viewPort.origin.x - controller.selectedLayerOrigin.x
 			shiftToWindowBorder = xPosition / zoomFactor
 			extremeBezierPaths = self.extremeLayerBezierPathsForFont(thisMaster.font)
 
@@ -233,14 +255,24 @@ class ShowVerticalMetrics(ReporterPlugin):
 		# the layer origin, so viewPort.origin.x + selectedLayerOrigin.x is always
 		# the same value. The graphic view itself is the reliable source here,
 		# and its visibleRect is in the same coordinates we are drawing in.
+		controller = self.viewController()
+		if controller is None:
+			return
 		leftWindowBorder = 0.0
 		try:
-			leftWindowBorder = self.controller.graphicView().visibleRect().origin.x
+			leftWindowBorder = controller.graphicView().visibleRect().origin.x
 		except:
 			pass
 		xPosition = leftWindowBorder + 80
 		# em units are the only thing that still needs to be scaled into view coordinates:
-		yOrigin = self.controller.selectedLayerOrigin.y
+		# selectedLayerOrigin can be None while the view is still being set up:
+		try:
+			layerOrigin = controller.selectedLayerOrigin
+		except:
+			layerOrigin = None
+		if layerOrigin is None:
+			return
+		yOrigin = layerOrigin.y
 
 		for thisMetric, height, alignment, isFirstAtThisHeight in self.metricsForMaster(thisMaster):
 			yPosition = yOrigin + height * zoomFactor
