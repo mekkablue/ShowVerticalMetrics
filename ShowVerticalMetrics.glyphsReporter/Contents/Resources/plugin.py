@@ -42,17 +42,40 @@ class ShowVerticalMetrics(ReporterPlugin):
 		)
 
 	@objc.python_method
+	def customParameter(self, thisObject, thisMetric):
+		"""
+		Reads a custom parameter off a master or a font, and returns None if the
+		object cannot supply one. Not every object we are handed is a real
+		GSFontMaster or GSFont: while an interpolated instance is previewed,
+		layer.associatedFontMaster().font is a GSInterpolationFontProxy, which
+		has no customParameters. It does answer customValueForKey_() though, so
+		we ask for that first and only fall back to the Python wrapper.
+		"""
+		if thisObject is None:
+			return None
+		try:
+			return thisObject.customValueForKey_(thisMetric)
+		except AttributeError:
+			pass
+		try:
+			return thisObject.customParameters[thisMetric]
+		except (AttributeError, KeyError, TypeError):
+			return None
+
+	@objc.python_method
 	def metricValue(self, thisMaster, thisMetric):
 		"""
 		Returns the value of the vertical metric custom parameter.
 		In Glyphs 4+, font-wide parameters are also accepted,
 		but master parameters take precedence over them.
 		"""
-		height = thisMaster.customParameters[thisMetric]
+		height = self.customParameter(thisMaster, thisMetric)
 		if height is None and Glyphs.versionNumber >= 4.0:
-			thisFont = thisMaster.font
-			if thisFont:
-				height = thisFont.customParameters[thisMetric]
+			try:
+				thisFont = thisMaster.font
+			except AttributeError:
+				thisFont = None
+			height = self.customParameter(thisFont, thisMetric)
 		return height
 
 	@objc.python_method
